@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
       ? "http://localhost:5000"
-      :"https://luisrivera.pythonanywhere.com/api/raster-data"
+      :"https://luisrivera.pythonanywhere.com"
       /* : "https://app-geo-json-luis.onrender.com"; */
 
   // Base layers
