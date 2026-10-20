@@ -1,10 +1,13 @@
 /* ============================================================
    GeoSpatial Analytics — capa de interfaz
    Mobile-first. Breakpoint de expansión: 768px.
+   Temas: claro (default) y oscuro vía [data-theme] en <html>.
    ============================================================ */
 
 /* ---------- Tokens ---------- */
 :root {
+  color-scheme: light;
+
   /* Altura real del viewport visible.
      100vh en móvil incluye la barra del navegador (oculta el pie).
      100dvh = altura dinámica: siempre coincide con lo visible. */
@@ -15,25 +18,103 @@
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
 
-  --ink: #eaf0f8;
-  --ink-dim: #a3b3c7;
-  --ink-faint: #6f8299;
-  --surface: rgba(8, 13, 21, 0.74);
-  --surface-solid: rgba(12, 19, 30, 0.9);
-  --hairline: rgba(146, 182, 226, 0.16);
-  --hairline-strong: rgba(146, 182, 226, 0.3);
+  /* Superficies */
+  --bg: #eaeff5;
+  --bg-map: #dde5ee;
+  --surface: rgba(255, 255, 255, 0.84);
+  --surface-solid: rgba(255, 255, 255, 0.96);
+  --surface-2: rgba(241, 245, 249, 0.92);
 
-  --accent: #ffb454;
-  --accent-soft: rgba(255, 180, 84, 0.14);
-  --cold: #8fc4e0;
-  --hot: #ef6a4a;
+  /* Tinta */
+  --ink: #0f172a;
+  --ink-dim: #475569;
+  --ink-faint: #64748b;
+
+  --hairline: rgba(15, 23, 42, 0.1);
+  --hairline-strong: rgba(15, 23, 42, 0.22);
+
+  /* Acento (ámbar de señal) */
+  --accent: #f59e0b;
+  --accent-text: #9a5407;
+  --accent-ink: #221603;
+  --accent-soft: rgba(245, 158, 11, 0.14);
+  --accent-hover: #d97706;
+  --accent-glow: rgba(245, 158, 11, 0.5);
+
+  /* Rellenos sutiles sobre superficies */
+  --inset: rgba(15, 23, 42, 0.045);
+  --inset-hover: rgba(15, 23, 42, 0.085);
+
+  /* Colores de dato: el mínimo y el máximo usan la rampa del ráster */
+  --cold: #2b7fa8;
+  --hot: #c2410c;
+
+  /* Etiquetas de stack */
+  --tag-python-ink: #0369a1;
+  --tag-python-bg: rgba(3, 105, 161, 0.08);
+  --tag-python-line: rgba(3, 105, 161, 0.24);
+  --tag-gis-ink: #15803d;
+  --tag-gis-bg: rgba(21, 128, 61, 0.08);
+  --tag-gis-line: rgba(21, 128, 61, 0.22);
+
+  /* Overlay de carga */
+  --overlay-a: rgba(255, 255, 255, 0.9);
+  --overlay-b: rgba(226, 232, 240, 0.96);
+  --spinner-track: rgba(15, 23, 42, 0.12);
 
   --radius-lg: 16px;
   --radius-sm: 10px;
-  --shadow: 0 18px 42px -16px rgba(0, 0, 0, 0.75);
+  --shadow: 0 14px 34px -14px rgba(15, 23, 42, 0.32);
 
   --font-ui: "Archivo", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* Tema oscuro: pizarra azulada, no negro puro.
+   Se elige slate (no near-black) porque el mapa base por defecto
+   es claro: un panel casi negro sobre un mapa claro se lee como
+   un bloque pesado. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0e1723;
+  --bg-map: #16202e;
+  --surface: rgba(27, 38, 56, 0.82);
+  --surface-solid: rgba(23, 33, 50, 0.95);
+  --surface-2: rgba(35, 48, 69, 0.9);
+
+  --ink: #e9eff8;
+  --ink-dim: #aab9cd;
+  --ink-faint: #7d8ea5;
+
+  --hairline: rgba(163, 193, 232, 0.16);
+  --hairline-strong: rgba(163, 193, 232, 0.3);
+
+  --accent: #ffb454;
+  --accent-text: #ffb454;
+  --accent-ink: #221603;
+  --accent-soft: rgba(255, 180, 84, 0.14);
+  --accent-hover: #ffc477;
+  --accent-glow: rgba(255, 180, 84, 0.55);
+
+  --inset: rgba(255, 255, 255, 0.055);
+  --inset-hover: rgba(255, 255, 255, 0.095);
+
+  --cold: #8fc4e0;
+  --hot: #ef6a4a;
+
+  --tag-python-ink: #7dd3fc;
+  --tag-python-bg: rgba(125, 211, 252, 0.1);
+  --tag-python-line: rgba(125, 211, 252, 0.26);
+  --tag-gis-ink: #86efac;
+  --tag-gis-bg: rgba(134, 239, 172, 0.08);
+  --tag-gis-line: rgba(134, 239, 172, 0.24);
+
+  --overlay-a: rgba(16, 25, 38, 0.9);
+  --overlay-b: rgba(8, 14, 22, 0.96);
+  --spinner-track: rgba(255, 255, 255, 0.14);
+
+  --shadow: 0 16px 38px -16px rgba(0, 0, 0, 0.62);
 }
 
 @supports (height: 100dvh) {
@@ -60,7 +141,7 @@ body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background: #070b12;
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
@@ -92,11 +173,11 @@ body {
   width: 100%;
   height: var(--app-vh);
   z-index: 0;
-  background: #0a0f18;
+  background: var(--bg-map);
 }
 
 .leaflet-container {
-  background: #0a0f18;
+  background: var(--bg-map);
   font-family: var(--font-ui);
 }
 
@@ -138,9 +219,9 @@ body {
   height: 1.9rem;
   flex: none;
   border-radius: 9px;
-  color: var(--accent);
-  background: linear-gradient(160deg, rgba(255, 180, 84, 0.2), rgba(255, 180, 84, 0.03));
-  border: 1px solid rgba(255, 180, 84, 0.3);
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-glow);
 }
 
 .brand-mark svg {
@@ -174,7 +255,7 @@ body {
   padding: 0.15rem 0.1rem;
   border-radius: 999px;
   border: 1px solid var(--hairline);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--inset);
   overflow: hidden;
 }
 
@@ -231,7 +312,7 @@ body {
   padding: 0;
   border-radius: 10px;
   border: 1px solid var(--hairline);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--inset);
   color: var(--ink-dim);
   cursor: pointer;
   touch-action: manipulation;
@@ -254,7 +335,7 @@ body.panel-open .panel-toggle svg {
 .panel-toggle:hover {
   color: var(--ink);
   border-color: var(--hairline-strong);
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--inset-hover);
 }
 
 .panel-toggle:focus-visible {
@@ -297,12 +378,78 @@ body.panel-open .app-panel-inner {
   border-top: 1px solid var(--hairline);
 }
 
+/* ---------- Selector de tema ---------- */
+.panel-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.panel-group-label {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.theme-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--inset);
+}
+
+.theme-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.6rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-faint);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.theme-option svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.theme-option[aria-pressed="true"] {
+  background: var(--surface-solid);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+}
+
+.theme-option:hover {
+  color: var(--ink-dim);
+}
+
+.theme-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .app-context {
   margin: 0;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .app-subtitle {
@@ -325,20 +472,20 @@ body.panel-open .app-panel-inner {
   padding: 0.2rem 0.5rem;
   border-radius: 999px;
   color: var(--ink-dim);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--inset);
   border: 1px solid var(--hairline);
 }
 
 .tag.python {
-  color: #7dd3fc;
-  background: rgba(125, 211, 252, 0.08);
-  border-color: rgba(125, 211, 252, 0.26);
+  color: var(--tag-python-ink);
+  background: var(--tag-python-bg);
+  border-color: var(--tag-python-line);
 }
 
 .tag.gis {
-  color: #86efac;
-  background: rgba(134, 239, 172, 0.07);
-  border-color: rgba(134, 239, 172, 0.24);
+  color: var(--tag-gis-ink);
+  background: var(--tag-gis-bg);
+  border-color: var(--tag-gis-line);
 }
 
 /* ---------- Capa de UI sobre el mapa ---------- */
@@ -435,7 +582,7 @@ body.panel-open .app-panel-inner {
   font-size: 0.74rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .opacity-slider {
@@ -461,8 +608,8 @@ body.panel-open .app-panel-inner {
   padding: 1.5rem;
   background: radial-gradient(
     120% 90% at 50% 30%,
-    rgba(12, 20, 32, 0.88),
-    rgba(5, 8, 14, 0.96)
+    var(--overlay-a),
+    var(--overlay-b)
   );
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -476,7 +623,7 @@ body.panel-open .app-panel-inner {
 .spinner {
   width: 44px;
   height: 44px;
-  border: 4px solid rgba(255, 255, 255, 0.12);
+  border: 4px solid var(--spinner-track);
   border-bottom-color: var(--accent);
   border-radius: 50%;
   display: inline-block;
@@ -513,21 +660,21 @@ body.panel-open .app-panel-inner {
   margin-top: 1.1rem;
   padding: 0.6rem 1.15rem;
   background: var(--accent);
-  color: #1a1206;
+  color: var(--accent-ink);
   border: none;
   border-radius: 9px;
   font-family: inherit;
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 22px -8px rgba(255, 180, 84, 0.6);
+  box-shadow: 0 8px 22px -10px var(--accent-glow);
   transition:
     background 0.2s ease,
     transform 0.1s ease;
 }
 
 .retry-btn:hover {
-  background: #ffc477;
+  background: var(--accent-hover);
 }
 
 .retry-btn:active {
@@ -562,7 +709,7 @@ body.panel-open .app-panel-inner {
 }
 
 .leaflet-bar a:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--inset-hover);
 }
 
 .leaflet-control-layers-toggle {
@@ -585,7 +732,7 @@ body.panel-open .app-panel-inner {
 }
 
 .leaflet-control-attribution {
-  background: rgba(8, 13, 21, 0.72) !important;
+  background: var(--surface-solid) !important;
   color: var(--ink-faint) !important;
   font-size: 0.58rem;
   padding: 1px 5px;
@@ -614,8 +761,6 @@ body.panel-open .app-panel-inner {
 /* ---------- Popups ---------- */
 .leaflet-popup-content-wrapper {
   background: var(--surface-solid);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: var(--ink);
   border: 1px solid var(--hairline);
   border-radius: 12px;
@@ -623,7 +768,7 @@ body.panel-open .app-panel-inner {
 }
 
 .leaflet-popup-tip {
-  background: rgba(12, 19, 30, 0.95);
+  background: var(--surface-solid);
   box-shadow: none;
 }
 
@@ -656,7 +801,7 @@ body.panel-open .app-panel-inner {
   font-family: var(--font-mono);
   font-size: 1rem;
   font-weight: 500;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* ============================================================

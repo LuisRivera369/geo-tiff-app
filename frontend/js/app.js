@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const panelToggle = document.getElementById("panel-toggle");
   const panelToggleLabel = document.getElementById("panel-toggle-label");
   const panelControls = document.getElementById("panel-controls");
+  const themeOptions = document.querySelectorAll(".theme-option");
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
   const legendList = document.getElementById("legend-list");
   const legendStrip = document.getElementById("legend-strip");
   const legendTicks = document.getElementById("legend-ticks");
@@ -174,7 +176,42 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==========================================================
-     5. Control de opacidad (vive dentro del panel desplegable:
+     5. Tema claro / oscuro
+     El tema se aplicó en <head> para evitar el flash; aquí sólo
+     se sincroniza la UI y se persiste la elección.
+     ========================================================== */
+  const THEME_KEY = "geo-theme";
+  const THEME_COLOR = { light: "#eaeff5", dark: "#0e1723" };
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    themeOptions.forEach((btn) => {
+      btn.setAttribute(
+        "aria-pressed",
+        String(btn.dataset.themeValue === theme)
+      );
+    });
+    if (themeMeta) {
+      themeMeta.setAttribute("content", THEME_COLOR[theme] || THEME_COLOR.light);
+    }
+  }
+
+  themeOptions.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const theme = btn.dataset.themeValue;
+      applyTheme(theme);
+      try {
+        localStorage.setItem(THEME_KEY, theme);
+      } catch (e) {
+        /* modo privado: el tema no se persiste */
+      }
+    });
+  });
+
+  applyTheme(document.documentElement.getAttribute("data-theme") || "light");
+
+  /* ==========================================================
+     6. Control de opacidad (vive dentro del panel desplegable:
         oculto por defecto en mobile, siempre visible en desktop)
      ========================================================== */
   const opacityPanel = document.createElement("div");
@@ -201,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ==========================================================
-     6. Layout adaptativo (mobile ↔ desktop)
+     7. Layout adaptativo (mobile ↔ desktop)
      ========================================================== */
   const mqMobile = window.matchMedia("(max-width: 767px)");
 
@@ -228,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==========================================================
-     7. Panel desplegable
+     8. Panel desplegable
      ========================================================== */
   function setPanelOpen(open) {
     document.body.classList.toggle("panel-open", open);
@@ -249,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==========================================================
-     8. Raster: render + interacción
+     9. Raster: render + interacción
      ========================================================== */
   function createRasterImage(raster) {
     const canvas = document.createElement("canvas");
@@ -329,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==========================================================
-     9. Fetch con cold-start y reintentos
+     10. Fetch con cold-start y reintentos
      ========================================================== */
   function fetchRasterData(attempt = 1, maxAttempts = 3) {
     loadingText.innerText = `Cargando datos ráster (intento ${attempt} de ${maxAttempts})...`;
@@ -401,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ==========================================================
-     10. Bootstrap
+     11. Bootstrap
      ========================================================== */
   buildLegend();
   syncLayout();
