@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>GeoSpatial Analytics - Visualizador Raster GeoTIFF</title>
 
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -28,17 +29,32 @@
       <div class="tech-tags">
         <span class="tag python">Python / Rasterio</span>
         <span class="tag python">Flask REST API</span>
-        <span class="tag gis">HTML5 Canvas</span>
+        <span class="tag gis">HTML5 Canvas (ImageData)</span>
         <span class="tag">Leaflet.js</span>
+      </div>
+
+      <!-- Resumen de estadísticas del ráster -->
+      <div id="stats-badge" class="stats-badge" style="display: none;">
+        <span><strong>T. Mín:</strong> <span id="stat-min">--</span> °C</span>
+        <span class="stat-sep">•</span>
+        <span><strong>T. Promedio:</strong> <span id="stat-mean">--</span> °C</span>
+        <span class="stat-sep">•</span>
+        <span><strong>T. Máx:</strong> <span id="stat-max">--</span> °C</span>
       </div>
     </header>
 
-    <!-- Overlay de Carga / Spinner -->
+    <!-- Overlay de Carga / Spinner con soporte para Cold Start -->
     <div id="loader-overlay">
-      <div class="spinner"></div>
-      <div class="loading-text">
-        Procesando matriz GeoTIFF desde el servidor...
+      <div class="spinner" id="loader-spinner"></div>
+      <div class="loading-text" id="loading-text">
+        Conectando con el servidor ráster...
       </div>
+      <div class="server-notice" id="server-notice" style="display: none;">
+        El servidor en la nube (Render) puede tardar unos segundos en despertar del reposo...
+      </div>
+      <button id="retry-btn" class="retry-btn" style="display: none;">
+        Reintentar conexión
+      </button>
     </div>
 
     <!-- Contenedor del Mapa -->

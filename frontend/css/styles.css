@@ -23,13 +23,13 @@ body {
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 12px 24px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   text-align: center;
   max-width: 90vw;
 }
@@ -38,7 +38,7 @@ body {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
@@ -70,10 +70,29 @@ body {
   color: #0369a1;
   border-color: #bae6fd;
 }
+
 .tag.gis {
   background: #dcfce7;
   color: #15803d;
   border-color: #bbf7d0;
+}
+
+/* Stats badge */
+.stats-badge {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: #1e293b;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid #cbd5e1;
+  padding: 3px 14px;
+  border-radius: 20px;
+}
+
+.stat-sep {
+  color: #94a3b8;
 }
 
 /* Fullscreen Overlay Loading Spinner */
@@ -83,8 +102,8 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px);
   z-index: 2000;
   display: flex;
   flex-direction: column;
@@ -94,6 +113,8 @@ body {
   transition:
     opacity 0.4s ease,
     visibility 0.4s ease;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .spinner {
@@ -121,19 +142,85 @@ body {
   font-size: 0.95rem;
   font-weight: 500;
   letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.server-notice {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  max-width: 400px;
+  text-align: center;
+}
+
+.retry-btn {
+  margin-top: 16px;
+  padding: 8px 18px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.retry-btn:hover {
+  background: #0369a1;
+}
+
+.retry-btn:active {
+  transform: scale(0.97);
+}
+
+/* Custom Leaflet Opacity Control */
+.leaflet-opacity-control {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  min-width: 170px;
+}
+
+.opacity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.opacity-slider {
+  width: 100%;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #0284c7;
 }
 
 /* Leyenda */
 .legend {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(6px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 12px;
-  line-height: 18px;
+  line-height: 20px;
   color: #1e293b;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.legend-title {
+  margin-bottom: 6px;
+  display: block;
 }
 
 .legend i {
@@ -141,7 +228,7 @@ body {
   height: 16px;
   float: left;
   margin-right: 8px;
-  opacity: 0.85;
+  opacity: 0.9;
   border-radius: 3px;
 }
 
@@ -149,4 +236,11 @@ body {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Popup styling */
+.popup-temp {
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: #0f172a;
 }
