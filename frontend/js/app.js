@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
       ? "http://localhost:5000"
-      : "https://app-geo-json-luis.onrender.com";
+      :"https://luisrivera.pythonanywhere.com/api/raster-data"
+      /* : "https://app-geo-json-luis.onrender.com"; */
 
   // Base layers
   const esriStreets = L.tileLayer(
