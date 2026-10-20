@@ -1,127 +1,483 @@
+/* ============================================================
+   GeoSpatial Analytics — capa de interfaz
+   Mobile-first. Breakpoint de expansión: 768px.
+   ============================================================ */
+
+/* ---------- Tokens ---------- */
+:root {
+  /* Altura real del viewport visible.
+     100vh en móvil incluye la barra del navegador (oculta el pie).
+     100dvh = altura dinámica: siempre coincide con lo visible. */
+  --app-vh: 100vh;
+  --bar-h: 3.25rem; /* 52px: barra superior en mobile */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+
+  --ink: #eaf0f8;
+  --ink-dim: #a3b3c7;
+  --ink-faint: #6f8299;
+  --surface: rgba(8, 13, 21, 0.74);
+  --surface-solid: rgba(12, 19, 30, 0.9);
+  --hairline: rgba(146, 182, 226, 0.16);
+  --hairline-strong: rgba(146, 182, 226, 0.3);
+
+  --accent: #ffb454;
+  --accent-soft: rgba(255, 180, 84, 0.14);
+  --cold: #8fc4e0;
+  --hot: #ef6a4a;
+
+  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 18px 42px -16px rgba(0, 0, 0, 0.75);
+
+  --font-ui: "Archivo", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-vh: 100dvh;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
-  height: 100%;
-  width: 100%;
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+  overscroll-behavior: none;
+  background: #070b12;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#map {
-  height: 100vh;
-  width: 100vw;
-  z-index: 1;
+body {
+  touch-action: manipulation;
 }
 
-/* Floating Glassmorphism Header */
-.app-header {
+.sr-only {
   position: absolute;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 12px 24px;
-  border-radius: 14px;
-  box-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  text-align: center;
-  max-width: 90vw;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Mapa ---------- */
+#map {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: var(--app-vh);
+  z-index: 0;
+  background: #0a0f18;
+}
+
+.leaflet-container {
+  background: #0a0f18;
+  font-family: var(--font-ui);
+}
+
+/* ---------- Barra superior ---------- */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  padding-top: var(--safe-t);
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.app-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--bar-h);
+  padding: 0.4rem calc(0.75rem + var(--safe-r)) 0.4rem
+    calc(0.75rem + var(--safe-l));
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: none;
+  border-radius: 9px;
+  color: var(--accent);
+  background: linear-gradient(160deg, rgba(255, 180, 84, 0.2), rgba(255, 180, 84, 0.03));
+  border: 1px solid rgba(255, 180, 84, 0.3);
+}
+
+.brand-mark svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .app-title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+/* ---------- Estadísticas ---------- */
+.stats-badge {
+  display: flex;
+  align-items: stretch;
+  padding: 0.15rem 0.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0.18rem 0.5rem;
+}
+
+.stat + .stat::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  background: var(--hairline);
+}
+
+.stat-label {
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.stat--min .stat-value {
+  color: var(--cold);
+}
+
+.stat--max .stat-value {
+  color: var(--hot);
+}
+
+/* ---------- Toggle del panel ---------- */
+.panel-toggle {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  flex: none;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink-dim);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.panel-toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+body.panel-open .panel-toggle svg {
+  transform: rotate(180deg);
+}
+
+.panel-toggle:hover {
+  color: var(--ink);
+  border-color: var(--hairline-strong);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.panel-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Panel desplegable ---------- */
+.app-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.32s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+body.panel-open .app-panel {
+  grid-template-rows: 1fr;
+}
+
+.app-panel-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 calc(0.75rem + var(--safe-r)) 0 calc(0.75rem + var(--safe-l));
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    padding-bottom 0.3s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+body.panel-open .app-panel-inner {
+  padding-bottom: 0.85rem;
+  opacity: 1;
+}
+
+.panel-controls {
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.app-context {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--accent);
 }
 
 .app-subtitle {
-  margin: 4px 0 8px 0;
-  font-size: 0.8rem;
-  color: #64748b;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
 }
 
 .tech-tags {
   display: flex;
-  gap: 6px;
-  justify-content: center;
   flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .tag {
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #cbd5e1;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  color: var(--ink-dim);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--hairline);
 }
 
 .tag.python {
-  background: #e0f2fe;
-  color: #0369a1;
-  border-color: #bae6fd;
+  color: #7dd3fc;
+  background: rgba(125, 211, 252, 0.08);
+  border-color: rgba(125, 211, 252, 0.26);
 }
 
 .tag.gis {
-  background: #dcfce7;
-  color: #15803d;
-  border-color: #bbf7d0;
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.07);
+  border-color: rgba(134, 239, 172, 0.24);
 }
 
-/* Stats badge */
-.stats-badge {
-  margin-top: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.76rem;
-  color: #1e293b;
-  background: rgba(248, 250, 252, 0.9);
-  border: 1px solid #cbd5e1;
-  padding: 3px 14px;
-  border-radius: 20px;
+/* ---------- Capa de UI sobre el mapa ---------- */
+.map-ui {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
 }
 
-.stat-sep {
-  color: #94a3b8;
+.map-ui > * {
+  pointer-events: auto;
 }
 
-/* Fullscreen Overlay Loading Spinner */
+/* ---------- Leyenda ---------- */
+.legend-panel {
+  position: absolute;
+  right: 0.75rem;
+  bottom: calc(1.9rem + var(--safe-b));
+  width: min(14.5rem, calc(100% - 5.5rem));
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow);
+}
+
+.legend-title {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Rampa horizontal (mobile) */
+.legend-list {
+  display: none;
+}
+
+.legend-strip {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.legend-seg {
+  flex: 1 1 0;
+}
+
+.legend-ticks {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 0.28rem;
+}
+
+.legend-ticks span {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* ---------- Control de opacidad ---------- */
+.opacity-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.opacity-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.opacity-title {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.opacity-value {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.opacity-slider {
+  width: 100%;
+  height: 1.1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+/* ---------- Overlay de carga ---------- */
 #loader-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(6px);
+  right: 0;
+  height: var(--app-vh);
   z-index: 2000;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: white;
+  padding: 1.5rem;
+  background: radial-gradient(
+    120% 90% at 50% 30%,
+    rgba(12, 20, 32, 0.88),
+    rgba(5, 8, 14, 0.96)
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--ink);
+  text-align: center;
   transition:
     opacity 0.4s ease,
     visibility 0.4s ease;
-  padding: 20px;
-  box-sizing: border-box;
 }
 
 .spinner {
-  width: 48px;
-  height: 48px;
-  border: 5px solid rgba(255, 255, 255, 0.2);
-  border-bottom-color: #38bdf8;
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255, 255, 255, 0.12);
+  border-bottom-color: var(--accent);
   border-radius: 50%;
   display: inline-block;
   box-sizing: border-box;
@@ -138,109 +494,272 @@ body {
 }
 
 .loading-text {
-  margin-top: 16px;
-  font-size: 0.95rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  text-align: center;
+  letter-spacing: 0.01em;
+  color: var(--ink);
 }
 
 .server-notice {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  color: #94a3b8;
-  max-width: 400px;
-  text-align: center;
+  margin-top: 0.5rem;
+  max-width: 22rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-faint);
 }
 
 .retry-btn {
-  margin-top: 16px;
-  padding: 8px 18px;
-  background: #0284c7;
-  color: #ffffff;
+  margin-top: 1.1rem;
+  padding: 0.6rem 1.15rem;
+  background: var(--accent);
+  color: #1a1206;
   border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
-  transition: background 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 8px 22px -8px rgba(255, 180, 84, 0.6);
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
 }
 
 .retry-btn:hover {
-  background: #0369a1;
+  background: #ffc477;
 }
 
 .retry-btn:active {
   transform: scale(0.97);
 }
 
-/* Custom Leaflet Opacity Control */
-.leaflet-opacity-control {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 10px 14px;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  min-width: 170px;
+.retry-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
-.opacity-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 6px;
+/* ---------- Ajustes de controles Leaflet ---------- */
+.leaflet-bar,
+.leaflet-control-layers {
+  background: var(--surface-solid);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  color: var(--ink);
 }
 
-.opacity-slider {
-  width: 100%;
-  margin: 0;
-  cursor: pointer;
-  accent-color: #0284c7;
+.leaflet-bar {
+  overflow: hidden;
 }
 
-/* Leyenda */
-.legend {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 12px;
-  line-height: 20px;
-  color: #1e293b;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  font-size: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+.leaflet-bar a {
+  color: var(--ink) !important;
+  border-bottom-color: var(--hairline) !important;
+  background: transparent;
 }
 
-.legend-title {
-  margin-bottom: 6px;
-  display: block;
+.leaflet-bar a:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.legend i {
-  width: 16px;
-  height: 16px;
-  float: left;
-  margin-right: 8px;
-  opacity: 0.9;
-  border-radius: 3px;
+.leaflet-control-layers-toggle {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill='%23eaf0f8' d='M13 3 2 8.5l11 5.5 11-5.5L13 3Zm0 12.4L4.2 10.9 2 11.7l11 5.5 11-5.5-2.2-.8L13 15.4ZM2 16.4l2.2-.8 8.8 4.4 8.8-4.4 2.2.8-11 5.5L2 16.4Z'/%3E%3C/svg%3E") !important;
+  background-size: 20px 20px !important;
 }
 
+.leaflet-control-layers-expanded {
+  padding: 0.6rem 0.75rem 0.6rem 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.leaflet-control-layers-separator {
+  border-top-color: var(--hairline) !important;
+}
+
+.leaflet-control-layers label {
+  color: var(--ink-dim);
+}
+
+.leaflet-control-attribution {
+  background: rgba(8, 13, 21, 0.72) !important;
+  color: var(--ink-faint) !important;
+  font-size: 0.58rem;
+  padding: 1px 5px;
+}
+
+.leaflet-control-attribution a {
+  color: var(--ink-dim) !important;
+}
+
+/* En mobile los controles superiores chocan con la barra: se bajan */
+.leaflet-top.leaflet-right {
+  top: calc(var(--bar-h) + var(--safe-t) + 0.5rem);
+}
+
+.leaflet-bottom.leaflet-left {
+  bottom: calc(0.6rem + var(--safe-b));
+}
+
+/* ---------- Ráster ---------- */
 .leaflet-image-layer {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;
 }
 
-/* Popup styling */
+/* ---------- Popups ---------- */
+.leaflet-popup-content-wrapper {
+  background: var(--surface-solid);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.leaflet-popup-tip {
+  background: rgba(12, 19, 30, 0.95);
+  box-shadow: none;
+}
+
+.leaflet-popup-content {
+  margin: 0.55rem 0.7rem;
+  font-family: var(--font-ui);
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--ink-faint) !important;
+}
+
 .popup-temp {
-  font-size: 0.88rem;
-  line-height: 1.4;
-  color: #0f172a;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.popup-temp strong {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.15rem;
+}
+
+.popup-temp span {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* ============================================================
+   Desktop / tablet — a partir de 768px
+   ============================================================ */
+@media (min-width: 768px) {
+  :root {
+    --bar-h: 3.5rem;
+  }
+
+  .app-header {
+    top: 1rem;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(40rem, calc(100% - 2rem));
+    padding-top: 0;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .app-bar {
+    padding: 0.7rem 1.1rem 0.4rem;
+  }
+
+  .app-title {
+    font-size: 1.02rem;
+  }
+
+  .app-panel-inner {
+    gap: 0.5rem;
+    padding-left: calc(1.1rem + var(--safe-l));
+    padding-right: calc(1.1rem + var(--safe-r));
+  }
+
+  body.panel-open .app-panel-inner {
+    padding-bottom: 1rem;
+  }
+
+  .app-context {
+    font-size: 0.82rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.78rem;
+  }
+
+  /* Leyenda vertical */
+  .legend-panel {
+    left: auto;
+    right: 0.75rem;
+    bottom: calc(1.9rem + var(--safe-b));
+    width: auto;
+    min-width: 8.5rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .legend-ramp {
+    display: none;
+  }
+
+  .legend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink-dim);
+    white-space: nowrap;
+  }
+
+  .legend-row i {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex: none;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Los controles superiores vuelven a su esquina */
+  .leaflet-top.leaflet-right {
+    top: 0;
+  }
+
+  .leaflet-bottom.leaflet-left {
+    bottom: 0;
+  }
+}
+
+/* ---------- Preferencias de movimiento ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

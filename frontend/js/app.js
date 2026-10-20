@@ -10,15 +10,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const statMean = document.getElementById("stat-mean");
   const statMax = document.getElementById("stat-max");
 
+  const panelToggle = document.getElementById("panel-toggle");
+  const panelToggleLabel = document.getElementById("panel-toggle-label");
+  const panelControls = document.getElementById("panel-controls");
+  const legendList = document.getElementById("legend-list");
+  const legendStrip = document.getElementById("legend-strip");
+  const legendTicks = document.getElementById("legend-ticks");
+
   // Dynamic API detection: local backend during local development, Render in production
   const API_BASE_URL =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
       ? "http://localhost:5000"
-      :"https://luisrivera.pythonanywhere.com"
-      /* : "https://app-geo-json-luis.onrender.com"; */
+      : "https://luisrivera.pythonanywhere.com"
+      /* : "https://app-geo-json-luis.onrender.com"; */;
 
-  // Base layers
+  /* ==========================================================
+     1. Viewport
+     En móvil, 100vh incluye la barra del navegador. Se usa
+     100dvh (altura dinámica) y, en navegadores sin soporte,
+     se calcula con visualViewport.
+     ========================================================== */
+  const supportsDvh =
+    window.CSS && CSS.supports && CSS.supports("height", "100dvh");
+
+  function syncViewportHeight() {
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    document.documentElement.style.setProperty("--app-vh", `${h}px`);
+  }
+
+  if (!supportsDvh) {
+    syncViewportHeight();
+    window.addEventListener("resize", syncViewportHeight);
+    window.addEventListener("orientationchange", syncViewportHeight);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", syncViewportHeight);
+    }
+  }
+
+  /* ==========================================================
+     2. Base layers
+     ========================================================== */
   const esriStreets = L.tileLayer(
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
     { attribution: "Tiles &copy; Esri &mdash; World Street Map", maxZoom: 18 }
@@ -47,16 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   );
 
-  // Initialize Leaflet Map
-  const map = L.map("map", {
-    zoomControl: false,
-    layers: [esriStreets],
-  }).setView([-9.19, -75.015], 6);
-
-  // Reposition zoom controls
-  L.control.zoom({ position: "bottomleft" }).addTo(map);
-
-  // Layer Switcher
   // OSM requires an HTTP Referer — only works when served via HTTP/HTTPS,
   // not when opening the HTML directly via the file:// protocol.
   const isServedOverHttp =
@@ -69,9 +92,19 @@ document.addEventListener("DOMContentLoaded", () => {
     "OpenTopoMap": topoMap,
     ...(isServedOverHttp ? { "OpenStreetMap": osm } : {}),
   };
-  L.control.layers(baseLayers, null, { position: "topright" }).addTo(map);
 
-  // Color ramp palette
+  // Initialize Leaflet Map
+  const map = L.map("map", {
+    zoomControl: false,
+    layers: [esriStreets],
+  }).setView([-9.19, -75.015], 6);
+
+  // Reposition zoom controls
+  L.control.zoom({ position: "bottomleft" }).addTo(map);
+
+  /* ==========================================================
+     3. Paleta de colores
+     ========================================================== */
   const COLOR_STOPS = [
     { threshold: 25, rgb: [215, 48, 39], hex: "#d73027" },
     { threshold: 20, rgb: [244, 109, 67], hex: "#f46d43" },
@@ -108,39 +141,116 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let rasterOverlay = null;
 
-  // Add Opacity Slider Control to the map
-  const OpacityControl = L.Control.extend({
-    options: { position: "topright" },
-    onAdd: function () {
-      const container = L.DomUtil.create("div", "leaflet-opacity-control");
-      container.innerHTML = `
-        <div class="opacity-header">
-          <span>Opacidad ráster</span>
-          <span id="opacity-label">70%</span>
-        </div>
-        <input type="range" id="opacity-slider" class="opacity-slider" min="10" max="100" value="70">
-      `;
+  /* ==========================================================
+     4. Leyenda (fuera de Leaflet para controlar su posición)
+     ========================================================== */
+  const LEGEND_CLASSES = [
+    { label: "≤ 0", value: -1 },
+    { label: "0 – 5", value: 0.1 },
+    { label: "5 – 10", value: 5.1 },
+    { label: "10 – 15", value: 10.1 },
+    { label: "15 – 20", value: 15.1 },
+    { label: "20 – 25", value: 20.1 },
+    { label: "25 +", value: 25.1 },
+  ];
 
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.disableScrollPropagation(container);
+  function buildLegend() {
+    // Variante vertical (desktop)
+    legendList.innerHTML = LEGEND_CLASSES.map(
+      (c) =>
+        `<span class="legend-row"><i style="background:${getColorHex(
+          c.value
+        )}"></i>${c.label}</span>`
+    ).join("");
 
-      const slider = container.querySelector("#opacity-slider");
-      const label = container.querySelector("#opacity-label");
+    // Variante rampa (mobile): franjas proporcionales + cortes
+    legendStrip.innerHTML = LEGEND_CLASSES.map(
+      (c) => `<span class="legend-seg" style="background:${getColorHex(c.value)}"></span>`
+    ).join("");
 
-      slider.addEventListener("input", (e) => {
-        const val = parseInt(e.target.value, 10);
-        label.textContent = `${val}%`;
-        if (rasterOverlay) {
-          rasterOverlay.setOpacity(val / 100);
-        }
-      });
+    legendTicks.innerHTML = ["", "0", "5", "10", "15", "20", "25+"]
+      .map((t) => `<span>${t}</span>`)
+      .join("");
+  }
 
-      return container;
-    },
+  /* ==========================================================
+     5. Control de opacidad (vive dentro del panel desplegable:
+        oculto por defecto en mobile, siempre visible en desktop)
+     ========================================================== */
+  const opacityPanel = document.createElement("div");
+  opacityPanel.className = "opacity-panel";
+  opacityPanel.innerHTML = `
+    <div class="opacity-header">
+      <span class="opacity-title">Opacidad ráster</span>
+      <span class="opacity-value" id="opacity-label">70%</span>
+    </div>
+    <input type="range" id="opacity-slider" class="opacity-slider" min="10" max="100" value="70" aria-label="Opacidad del ráster">
+  `;
+
+  panelControls.appendChild(opacityPanel);
+
+  const opacitySlider = opacityPanel.querySelector("#opacity-slider");
+  const opacityLabel = opacityPanel.querySelector("#opacity-label");
+
+  opacitySlider.addEventListener("input", (e) => {
+    const val = parseInt(e.target.value, 10);
+    opacityLabel.textContent = `${val}%`;
+    if (rasterOverlay) {
+      rasterOverlay.setOpacity(val / 100);
+    }
   });
-  map.addControl(new OpacityControl());
 
-  // Render raster matrix into canvas using high-performance ImageData
+  /* ==========================================================
+     6. Layout adaptativo (mobile ↔ desktop)
+     ========================================================== */
+  const mqMobile = window.matchMedia("(max-width: 767px)");
+
+  let layersControl = null;
+
+  function syncLayersControl() {
+    const mobile = mqMobile.matches;
+    if (layersControl) {
+      map.removeControl(layersControl);
+      layersControl = null;
+    }
+    layersControl = L.control.layers(baseLayers, null, {
+      // Mobile: colapsado a un botón, arriba a la derecha.
+      // Desktop: expandido, arriba a la izquierda.
+      position: mobile ? "topright" : "topleft",
+      collapsed: mobile,
+    }).addTo(map);
+  }
+
+  function syncLayout() {
+    syncLayersControl();
+    setPanelOpen(!mqMobile.matches);
+    map.invalidateSize({ pan: false });
+  }
+
+  /* ==========================================================
+     7. Panel desplegable
+     ========================================================== */
+  function setPanelOpen(open) {
+    document.body.classList.toggle("panel-open", open);
+    panelToggle.setAttribute("aria-expanded", String(open));
+    panelToggleLabel.textContent = open
+      ? "Ocultar información y controles"
+      : "Mostrar información y controles";
+  }
+
+  panelToggle.addEventListener("click", () => {
+    setPanelOpen(!document.body.classList.contains("panel-open"));
+  });
+
+  if (mqMobile.addEventListener) {
+    mqMobile.addEventListener("change", syncLayout);
+  } else if (mqMobile.addListener) {
+    mqMobile.addListener(syncLayout);
+  }
+
+  /* ==========================================================
+     8. Raster: render + interacción
+     ========================================================== */
   function createRasterImage(raster) {
     const canvas = document.createElement("canvas");
     canvas.width = raster.width;
@@ -175,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const north = raster.bounds[1][0];
     const east = raster.bounds[1][1];
 
-    map.on("click", (e) => {
+    const onMapClick = (e) => {
       if (!bounds.contains(e.latlng)) {
         map.closePopup();
         return;
@@ -203,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .setLatLng(e.latlng)
           .setContent(`
             <div class="popup-temp">
-              <strong>Pronóstico de Temp. Mínima</strong><br>
+              <strong>Pronóstico de Temp. Mínima</strong>
               <span>${temp} °C</span>
             </div>
           `)
@@ -211,10 +321,16 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         map.closePopup();
       }
-    });
+    };
+
+    // Evita handlers duplicados cuando se reintenta la carga
+    map.off("click", onMapClick);
+    map.on("click", onMapClick);
   }
 
-  // Fetch raster data with cold-start management and retry logic
+  /* ==========================================================
+     9. Fetch con cold-start y reintentos
+     ========================================================== */
   function fetchRasterData(attempt = 1, maxAttempts = 3) {
     loadingText.innerText = `Cargando datos ráster (intento ${attempt} de ${maxAttempts})...`;
     retryBtn.style.display = "none";
@@ -242,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         rasterOverlay = L.imageOverlay(imageUrl, bounds, {
-          opacity: 0.7,
+          opacity: parseInt(opacitySlider.value, 10) / 100,
         }).addTo(map);
 
         map.fitBounds(bounds);
@@ -253,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
           statMin.innerText = raster.stats.min;
           statMean.innerText = raster.stats.mean;
           statMax.innerText = raster.stats.max;
-          statsBadge.style.display = "inline-flex";
+          statsBadge.hidden = false;
         }
 
         // Hide loader overlay
@@ -284,28 +400,26 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchRasterData(1, 3);
   });
 
+  /* ==========================================================
+     10. Bootstrap
+     ========================================================== */
+  buildLegend();
+  syncLayout();
+
   // Start initial fetch
   fetchRasterData();
 
-  // Add Legend Control
-  const legend = L.control({ position: "bottomright" });
-  legend.onAdd = function () {
-    const div = L.DomUtil.create("div", "legend");
-    const grades = [0, 5, 10, 15, 20, 25];
-    div.innerHTML = "<strong class='legend-title'>Temperatura (°C)</strong><br>";
+  // Leaflet no recalcula el tamaño cuando la barra del navegador móvil
+  // se pliega/despliega: hay que forzarlo.
+  let resizeRaf = null;
+  function onViewportChange() {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+  }
 
-    // Cold grade (< 0)
-    div.innerHTML += '<i style="background:' + getColorHex(-1) + '"></i> &le; 0<br>';
-
-    for (let i = 0; i < grades.length; i++) {
-      div.innerHTML +=
-        '<i style="background:' +
-        getColorHex(grades[i] + 0.1) +
-        '"></i> ' +
-        grades[i] +
-        (grades[i + 1] !== undefined ? "&ndash;" + grades[i + 1] + "<br>" : "+");
-    }
-    return div;
-  };
-  legend.addTo(map);
+  window.addEventListener("resize", onViewportChange);
+  window.addEventListener("orientationchange", onViewportChange);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", onViewportChange);
+  }
 });

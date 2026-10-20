@@ -2,11 +2,24 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="theme-color" content="#070b12" />
+    <meta name="color-scheme" content="dark" />
     <title>GeoSpatial Analytics - Visualizador Raster GeoTIFF</title>
 
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!-- Tipografía -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Leaflet CSS -->
     <link
@@ -17,40 +30,99 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <!-- Header Flotante -->
-    <header class="app-header">
-      <h1 class="app-title">
-        GeoSpatial Analytics: Pronóstico de Temperatura Mínima
-      </h1>
-      <p class="app-subtitle">
-        Visualización interactiva de ráster GeoTIFF mediante backend Python &
-        REST API
-      </p>
-      <div class="tech-tags">
-        <span class="tag python">Python / Rasterio</span>
-        <span class="tag python">Flask REST API</span>
-        <span class="tag gis">HTML5 Canvas (ImageData)</span>
-        <span class="tag">Leaflet.js</span>
+    <!-- ============ Barra superior + panel desplegable ============ -->
+    <header class="app-header" id="app-header">
+      <div class="app-bar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            >
+              <path d="M2 8.5c3-3.5 6 3.5 9 0s6.5-3.5 11 0" />
+              <path d="M2 13c3-3.5 6 3.5 9 0s6.5-3.5 11 0" />
+              <path d="M2 17.5c3-3.5 6 3.5 9 0s6.5-3.5 11 0" />
+            </svg>
+          </span>
+          <h1 class="app-title">GeoSpatial Analytics</h1>
+        </div>
+
+        <div class="app-bar-tools">
+          <!-- Resumen de estadísticas del ráster -->
+          <div id="stats-badge" class="stats-badge" hidden>
+            <span class="stat stat--min">
+              <span class="stat-label">Mín</span>
+              <span class="stat-value" id="stat-min">--</span>
+            </span>
+            <span class="stat stat--mean">
+              <span class="stat-label">Prom</span>
+              <span class="stat-value" id="stat-mean">--</span>
+            </span>
+            <span class="stat stat--max">
+              <span class="stat-label">Máx</span>
+              <span class="stat-value" id="stat-max">--</span>
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="panel-toggle"
+            id="panel-toggle"
+            aria-expanded="false"
+            aria-controls="app-panel"
+          >
+            <span class="sr-only" id="panel-toggle-label"
+              >Mostrar información y controles</span
+            >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <!-- Resumen de estadísticas del ráster -->
-      <div id="stats-badge" class="stats-badge" style="display: none;">
-        <span><strong>T. Mín:</strong> <span id="stat-min">--</span> °C</span>
-        <span class="stat-sep">•</span>
-        <span><strong>T. Promedio:</strong> <span id="stat-mean">--</span> °C</span>
-        <span class="stat-sep">•</span>
-        <span><strong>T. Máx:</strong> <span id="stat-max">--</span> °C</span>
+      <!-- Panel: contexto, descripción, stack y controles -->
+      <div class="app-panel" id="app-panel">
+        <div class="app-panel-inner">
+          <p class="app-context">Pronóstico de Temperatura Mínima</p>
+          <p class="app-subtitle">
+            Visualización interactiva de ráster GeoTIFF mediante backend Python
+            &amp; REST API
+          </p>
+
+          <div class="tech-tags">
+            <span class="tag python">Python / Rasterio</span>
+            <span class="tag python">Flask REST API</span>
+            <span class="tag gis">HTML5 Canvas (ImageData)</span>
+            <span class="tag">Leaflet.js</span>
+          </div>
+
+          <!-- El control de opacidad se inyecta aquí en mobile -->
+          <div class="panel-controls" id="panel-controls"></div>
+        </div>
       </div>
     </header>
 
     <!-- Overlay de Carga / Spinner con soporte para Cold Start -->
-    <div id="loader-overlay">
+    <div id="loader-overlay" role="status" aria-live="polite">
       <div class="spinner" id="loader-spinner"></div>
       <div class="loading-text" id="loading-text">
         Conectando con el servidor ráster...
       </div>
       <div class="server-notice" id="server-notice" style="display: none;">
-        El servidor en la nube (Render) puede tardar unos segundos en despertar del reposo...
+        El servidor en la nube (Render) puede tardar unos segundos en despertar
+        del reposo...
       </div>
       <button id="retry-btn" class="retry-btn" style="display: none;">
         Reintentar conexión
@@ -59,6 +131,22 @@
 
     <!-- Contenedor del Mapa -->
     <div id="map"></div>
+
+    <!-- Capa de UI sobre el mapa: leyenda + opacidad (desktop) -->
+    <div class="map-ui" id="map-ui">
+      <div class="legend-panel" id="legend-panel">
+        <span class="legend-title">Temperatura (°C)</span>
+
+        <!-- Variante vertical (desktop) -->
+        <div class="legend-list" id="legend-list"></div>
+
+        <!-- Variante rampa horizontal (mobile) -->
+        <div class="legend-ramp" id="legend-ramp">
+          <div class="legend-strip" id="legend-strip"></div>
+          <div class="legend-ticks" id="legend-ticks"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
