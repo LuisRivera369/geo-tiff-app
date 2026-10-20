@@ -241,6 +241,23 @@ body {
   text-overflow: ellipsis;
 }
 
+/* En pantallas estrechas el nombre completo no entra junto a las
+   estadísticas: se usa la forma corta. aria-label mantiene el
+   nombre accesible completo. */
+.title-short {
+  display: none;
+}
+
+@media (max-width: 419px) {
+  .title-long {
+    display: none;
+  }
+
+  .title-short {
+    display: inline;
+  }
+}
+
 .app-bar-tools {
   display: flex;
   align-items: center;
@@ -265,7 +282,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 0.18rem 0.5rem;
+  padding: 0.18rem 0.44rem;
 }
 
 .stat + .stat::before {
@@ -306,11 +323,11 @@ body {
 .panel-toggle {
   display: grid;
   place-items: center;
-  width: 2.15rem;
-  height: 2.15rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: none;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   border: 1px solid var(--hairline);
   background: var(--inset);
   color: var(--ink-dim);
@@ -712,9 +729,17 @@ body.panel-open .app-panel-inner {
   background: var(--inset-hover);
 }
 
+/* El icono nativo de Leaflet es un PNG blanco: sobre panel claro
+   desaparece. Se usa como máscara para que el color lo aporte
+   `background-color` y siga al tema (currentColor no aplica a
+   background-image). */
 .leaflet-control-layers-toggle {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath fill='%23eaf0f8' d='M13 3 2 8.5l11 5.5 11-5.5L13 3Zm0 12.4L4.2 10.9 2 11.7l11 5.5 11-5.5-2.2-.8L13 15.4ZM2 16.4l2.2-.8 8.8 4.4 8.8-4.4 2.2.8-11 5.5L2 16.4Z'/%3E%3C/svg%3E") !important;
-  background-size: 20px 20px !important;
+  background-image: none !important;
+  background-color: var(--ink);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath d='M13 3 2 8.5l11 5.5 11-5.5L13 3Zm0 12.4L4.2 10.9 2 11.7l11 5.5 11-5.5-2.2-.8L13 15.4ZM2 16.4l2.2-.8 8.8 4.4 8.8-4.4 2.2.8-11 5.5L2 16.4Z'/%3E%3C/svg%3E")
+    no-repeat center / 20px 20px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath d='M13 3 2 8.5l11 5.5 11-5.5L13 3Zm0 12.4L4.2 10.9 2 11.7l11 5.5 11-5.5-2.2-.8L13 15.4ZM2 16.4l2.2-.8 8.8 4.4 8.8-4.4 2.2.8-11 5.5L2 16.4Z'/%3E%3C/svg%3E")
+    no-repeat center / 20px 20px;
 }
 
 .leaflet-control-layers-expanded {
