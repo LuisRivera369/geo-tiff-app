@@ -21,9 +21,7 @@
   /* Superficies */
   --bg: #eaeff5;
   --bg-map: #dde5ee;
-  --surface: rgba(255, 255, 255, 0.84);
   --surface-solid: rgba(255, 255, 255, 0.96);
-  --surface-2: rgba(241, 245, 249, 0.92);
 
   /* Tinta */
   --ink: #0f172a;
@@ -79,9 +77,7 @@ html[data-theme="dark"] {
 
   --bg: #0e1723;
   --bg-map: #16202e;
-  --surface: rgba(27, 38, 56, 0.82);
   --surface-solid: rgba(23, 33, 50, 0.95);
-  --surface-2: rgba(35, 48, 69, 0.9);
 
   --ink: #e9eff8;
   --ink-dim: #aab9cd;
@@ -189,7 +185,7 @@ body {
   right: 0;
   z-index: 1200;
   padding-top: var(--safe-t);
-  background: var(--surface);
+  background: var(--surface-solid);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   border-bottom: 1px solid var(--hairline);
@@ -299,7 +295,6 @@ body {
   font-size: 0.5rem;
   font-weight: 600;
   letter-spacing: 0.13em;
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 
@@ -409,7 +404,6 @@ body.panel-open .app-panel-inner {
   font-size: 0.56rem;
   font-weight: 600;
   letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 
@@ -525,7 +519,7 @@ body.panel-open .app-panel-inner {
   width: min(14.5rem, calc(100% - 5.5rem));
   padding: 0.55rem 0.65rem;
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--surface-solid);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
   border: 1px solid var(--hairline);
@@ -538,7 +532,6 @@ body.panel-open .app-panel-inner {
   font-size: 0.56rem;
   font-weight: 600;
   letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 
@@ -590,7 +583,6 @@ body.panel-open .app-panel-inner {
   font-size: 0.56rem;
   font-weight: 600;
   letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 
@@ -817,7 +809,6 @@ body.panel-open .app-panel-inner {
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--ink-faint);
   margin-bottom: 0.15rem;
 }
